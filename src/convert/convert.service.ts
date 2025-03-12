@@ -1,17 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { convertFiles } from 'src/utils/convert-functions';
 
 @Injectable()
 export class ConvertService {
-  convert(
+  async convert(
     file: Express.Multer.File,
     fromFormat: string,
     toFormat: string,
-  ): any {
-    const fileName = file.originalname;
-    return {
-      fileName,
-      fromFormat,
-      toFormat,
-    };
+  ): Promise<any> {
+    const methodName = `${fromFormat}-to-${toFormat}`;
+    const pdfBuffer = await convertFiles(methodName, file);
+    return pdfBuffer;
   }
 }

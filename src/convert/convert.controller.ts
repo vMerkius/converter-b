@@ -3,9 +3,12 @@ import {
   Get,
   Post,
   Query,
+  Res,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
+import { Response } from 'express';
+
 import { ConvertService } from './convert.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileSizeValidationPipe } from 'src/filters/file-size-filter';
@@ -17,12 +20,24 @@ export class ConvertController {
 
   @Post()
   @UseInterceptors(FileInterceptor('file'))
-  uploadFileAndValidate(
+  async uploadFileAndValidate(
     @UploadedFile(new FileValidationPipe(), new FileSizeValidationPipe())
     file: Express.Multer.File,
     @Query('from') fromFormat: string,
     @Query('to') toFormat: string,
-  ): any {
-    return this.convertService.convert(file, fromFormat, toFormat);
+    @Res() res: Response,
+  ): Promise<any> {
+    const pdfBuffer = await this.convertService.convert(
+      file,
+      fromFormat,
+      toFormat,
+    );
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename=${file.originalname.replace(/\.[^/.]+$/, '-pdf')}.pdf`,
+    });
+
+    return res.send(pdfBuffer);
   }
 }
