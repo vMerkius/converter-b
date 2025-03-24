@@ -1,11 +1,9 @@
 import * as sharp from 'sharp';
 import { PDFDocument } from 'pdf-lib';
 
-export const pngToPdf = async (file: Express.Multer.File): Promise<Buffer> => {
-  if (!file) {
-    throw new Error('No file provided');
-  }
-
+export const convertImgToPdf = async (
+  file: Express.Multer.File,
+): Promise<Buffer> => {
   const jpegBuffer = await sharp(file.buffer).jpeg().toBuffer();
   const pdfDoc = await PDFDocument.create();
   const page = pdfDoc.addPage();
@@ -24,9 +22,26 @@ export const pngToPdf = async (file: Express.Multer.File): Promise<Buffer> => {
 
   return Buffer.from(pdfBytes);
 };
+export const convertPngToJpg = async (
+  file: Express.Multer.File,
+): Promise<Buffer> => {
+  return await sharp(file.buffer).jpeg().toBuffer();
+};
+
+export const convertJpgToPng = async (
+  file: Express.Multer.File,
+): Promise<Buffer> => {
+  return await sharp(file.buffer).png().toBuffer();
+};
 
 export const conversionMethods = {
-  'png-to-pdf': pngToPdf,
+  'png-to-pdf': convertImgToPdf,
+  'jpg-to-pdf': convertImgToPdf,
+  'jpeg-to-pdf': convertImgToPdf,
+  'png-to-jpg': convertPngToJpg,
+  'png-to-jpeg': convertPngToJpg,
+  'jpg-to-png': convertJpgToPng,
+  'jpeg-to-png': convertJpgToPng,
 };
 
 export const convertFiles = (method: string, file: Express.Multer.File) => {
